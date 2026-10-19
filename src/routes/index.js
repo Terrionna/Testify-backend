@@ -41,10 +41,8 @@ router.put('/admin/tests/:id', requireAuth, requireAdmin, tests.update);
 router.post('/admin/tests/:id/publish', requireAuth, requireAdmin, tests.publish);
 // POST: /api/admin/tests/:id/versions, copies a test into a new draft version.
 router.post('/admin/tests/:id/versions', requireAuth, requireAdmin, tests.newVersion);
-// GET: /api/admin/tests/:id/attempts, lists every attempt on one test.
-router.get('/admin/tests/:id/attempts', requireAuth, requireAdmin, attempts.forTest);
-// GET: /api/admin/stats/tests, reports attempt counts, pass rate, and average score per test version.
-router.get('/admin/stats/tests', requireAuth, requireAdmin, stats.byTest);
+// GET: /api/admin/stats, returns totals and the numbers for each test.
+router.get('/admin/stats', requireAuth, requireAdmin, stats.overview);
 // DELETE: /api/admin/tests/:id, deletes a draft.
 router.delete('/admin/tests/:id', requireAuth, requireAdmin, tests.remove);
 

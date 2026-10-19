@@ -1,22 +1,28 @@
-// JavaScript source code
-// Reports attempt counts, pass rate, and average score for every test version.
+// Stats queries for Testify.
+// Uses an aggregation pipeline: the database groups and averages the attempts, not the server.
 const Attempt = require('../models/attempt');
+const User = require('../models/user');
+const Certificate = require('../models/certificate');
 
-const testStats = () =>
+// Returns one row per test with the attempt count, average score, pass rate, and number of different takers.
+const perTest = () =>
     Attempt.aggregate([
-        // Group every attempt by which test it belongs to.
+        // Put all attempts for the same test document together.
         {
             $group: {
                 _id: '$test',
                 attempts: { $sum: 1 },
+                averageScore: { $avg: '$score' },
+                // Add 1 for every passed attempt and 0 for every failed one.
                 passes: { $sum: { $cond: ['$passed', 1, 0] } },
-                averageScore: { $avg: '$score' }
+                // A set holds each user once, so its size is the number of different takers.
+                takers: { $addToSet: '$user' }
             }
         },
-        // Join in the test document so its title and version can be reported.
+        // Bring in the test document for the title and version.
         { $lookup: { from: 'tests', localField: '_id', foreignField: '_id', as: 'test' } },
         { $unwind: '$test' },
-        // Shape the final result and work out the pass rate as a percent.
+        // Choose the fields to send back and round the numbers to one decimal place.
         {
             $project: {
                 _id: 0,
@@ -24,12 +30,22 @@ const testStats = () =>
                 title: '$test.title',
                 version: '$test.version',
                 attempts: 1,
-                passes: 1,
-                passRate: { $round: [{ $multiply: [{ $divide: ['$passes', '$attempts'] }, 100] }, 1] },
-                averageScore: { $round: ['$averageScore', 1] }
+                takers: { $size: '$takers' },
+                averageScore: { $round: ['$averageScore', 1] },
+                passRate: { $round: [{ $multiply: [{ $divide: ['$passes', '$attempts'] }, 100] }, 1] }
             }
         },
         { $sort: { title: 1, version: 1 } }
-    ]).exec();
+    ]);
 
-module.exports = { testStats };
+// Returns the number of users, attempts, and certificates.
+const totals = async () => {
+    const [users, attempts, certificates] = await Promise.all([
+        User.countDocuments(),
+        Attempt.countDocuments(),
+        Certificate.countDocuments()
+    ]);
+    return { users, attempts, certificates };
+};
+
+module.exports = { perTest, totals };

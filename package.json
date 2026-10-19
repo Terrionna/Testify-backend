@@ -12,7 +12,10 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "eslint": "^10.11.0"
+    "eslint": "^10.11.0",
+    "jest": "^30.5.2",
+    "mongodb-memory-server": "^11.3.0",
+    "supertest": "^7.3.1"
   },
   "dependencies": {
     "cors": "^2.8.5",

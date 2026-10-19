@@ -1,32 +1,16 @@
-// Database calls for attempts.
-// Keeping these out of the controller means the controller only has to decide what to do with the result.
+// Attempt queries for Testify.
+// Every database call for attempts lives here, so controllers never build queries.
 const Attempt = require('../models/attempt');
 
 // Saves one attempt.
-const recordAttempt = ({ userId, test, answers, score, passed }) =>
-    Attempt.create({
-        user: userId,
-        test: test._id,
-        testVersion: test.version,
-        answers,
-        score,
-        passed
-    });
+const create = (data) => Attempt.create(data);
 
-// Returns one user's attempts, newest first, without the answers.
-const attemptsForUser = (userId) =>
+// Returns a user's attempts, newest first, with the test title and without the answers.
+const findByUser = (userId) =>
     Attempt.find({ user: userId })
         .populate('test', 'title')
         .select('-answers')
         .sort({ takenAt: -1 })
         .exec();
 
-// Returns every attempt on one test, newest first, without the answers.
-const attemptsForTest = (testId) =>
-    Attempt.find({ test: testId })
-        .populate('user', 'name email')
-        .select('-answers')
-        .sort({ takenAt: -1 })
-        .exec();
-
-module.exports = { recordAttempt, attemptsForUser, attemptsForTest };
+module.exports = { create, findByUser };

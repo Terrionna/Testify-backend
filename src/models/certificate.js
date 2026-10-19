@@ -13,4 +13,8 @@ const certificateSchema = new mongoose.Schema({
     issuedAt: { type: Date, default: Date.now }
 });
 
+// One user can hold only one certificate for each test document.
+// The database enforces this, so two passes at the same moment cannot create two.
+certificateSchema.index({ user: 1, test: 1 }, { unique: true });
+
 module.exports = mongoose.model('certificates', certificateSchema);
