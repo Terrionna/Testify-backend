@@ -4,7 +4,7 @@ const Attempt = require('../models/attempt');
 const User = require('../models/user');
 const Certificate = require('../models/certificate');
 
-// Returns one row per test with the attempt count, average score, pass rate, and number of different takers.
+// Returns one row per test with the attempt count, pass count, average score, pass rate, and number of different takers.
 const perTest = () =>
     Attempt.aggregate([
         // Put all attempts for the same test document together.
@@ -30,6 +30,7 @@ const perTest = () =>
                 title: '$test.title',
                 version: '$test.version',
                 attempts: 1,
+                passes: 1,
                 takers: { $size: '$takers' },
                 averageScore: { $round: ['$averageScore', 1] },
                 passRate: { $round: [{ $multiply: [{ $divide: ['$passes', '$attempts'] }, 100] }, 1] }

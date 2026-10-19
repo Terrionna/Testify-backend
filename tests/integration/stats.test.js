@@ -41,6 +41,7 @@ describe('GET /api/admin/stats', () => {
             title: 'Stats Test',
             version: 1,
             attempts: 2,
+            passes: 1,
             takers: 2,
             averageScore: 80,
             passRate: 50
